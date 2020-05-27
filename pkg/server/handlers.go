@@ -1,8 +1,6 @@
 package server
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"encoding/json"
 	"net/http"
 
@@ -10,22 +8,15 @@ import (
 	"github.com/pkg/errors"
 )
 
-const (
-	ErrCreatingID            = "failed creating id"
-	ErrCouldNotWriteResponse = "could not write response"
-)
-
-type ResultList []Result
-
-type Result struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+type Resource struct {
+	Name string `json:"name"`
 }
 
 func (server *Server) index(writer http.ResponseWriter, req *http.Request) {
-	list := ResultList{
-		Result{ID: "abc123", URL: "something"},
-		Result{ID: "zxy456", URL: "another"},
+	// todo: get data from data source
+	list := []Resource{
+		{Name: "Bob"},
+		{Name: "Joe"},
 	}
 
 	writer.Header().Set("Content-Type", "application/json")
@@ -35,7 +26,7 @@ func (server *Server) index(writer http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (server *Server) resultIndex(writer http.ResponseWriter, req *http.Request) {
+func (server *Server) resourceIndex(writer http.ResponseWriter, req *http.Request) {
 	if req.ContentLength > server.config.MaxBodySize {
 		http.Error(writer, "request body too large", http.StatusExpectationFailed)
 		return
@@ -43,45 +34,32 @@ func (server *Server) resultIndex(writer http.ResponseWriter, req *http.Request)
 
 	req.Body = http.MaxBytesReader(writer, req.Body, server.config.MaxBodySize)
 
-	id, err := generateID()
+	var resource Resource
+	err := json.NewDecoder(req.Body).Decode(&resource)
 	if err != nil {
-		http.Error(writer, errors.Wrap(err, ErrCreatingID).Error(), http.StatusInternalServerError)
+		http.Error(writer, errors.Wrap(err, "failed to parse request body").Error(), http.StatusBadRequest)
 		return
 	}
 
-	list := ResultList{
-		Result{ID: id, URL: "something"},
-	}
+	// todo: validate data, and write resource data
 
 	writer.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(writer).Encode(&list)
+	err = json.NewEncoder(writer).Encode(&resource)
 	if err != nil {
-		http.Error(writer, "could not write response", http.StatusInternalServerError)
+		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
 	}
 }
 
-func (server *Server) resultShow(writer http.ResponseWriter, req *http.Request) {
+func (server *Server) resourceShow(writer http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	id := vars["id"]
 
-	// todo: look up data from data file, or in-memory
-	list := ResultList{
-		Result{ID: id, URL: "something"},
-	}
+	// todo: get data, output 404 if not found
+	resource := Resource{Name: id}
 
 	writer.Header().Set("Content-Type", "application/json")
-	err := json.NewEncoder(writer).Encode(&list)
+	err := json.NewEncoder(writer).Encode(&resource)
 	if err != nil {
-		http.Error(writer, "could not write response", http.StatusInternalServerError)
+		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
 	}
-}
-
-func generateID() (string, error) {
-	b := make([]byte, 10)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.URLEncoding.EncodeToString(b), nil
 }

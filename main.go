@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/halkyon/go-rest/pkg/server"
+	"github.com/halkyon/go-rest-server/pkg/server"
 )
 
 const (
@@ -25,12 +25,12 @@ func main() {
 func run(stdout io.Writer) error {
 	var serverConfig server.Config
 
-	flag.StringVar(&serverConfig.Listen, "listen", "0.0.0.0", "HTTP server address")
-	flag.StringVar(&serverConfig.Port, "port", "8000", "HTTP server port")
-	flag.DurationVar(&serverConfig.IdleTimeout, "idle-timeout", 10*time.Second, "HTTP server idle timeout")
-	flag.DurationVar(&serverConfig.ReadTimeout, "read-timeout", 10*time.Second, "HTTP server read timeout")
-	flag.DurationVar(&serverConfig.WriteTimeout, "write-timeout", 10*time.Second, "HTTP server write timeout")
-	flag.Int64Var(&serverConfig.MaxBodySize, "max-body-size", 51<<20, "Max body size in bytes")
+	flag.StringVar(&serverConfig.Listen, "listen", "0.0.0.0", "Address")
+	flag.StringVar(&serverConfig.Port, "port", "8000", "Port")
+	flag.DurationVar(&serverConfig.IdleTimeout, "idle-timeout", 10*time.Second, "Idle timeout")
+	flag.DurationVar(&serverConfig.ReadTimeout, "read-timeout", 10*time.Second, "Read timeout")
+	flag.DurationVar(&serverConfig.WriteTimeout, "write-timeout", 10*time.Second, "Write timeout")
+	flag.Int64Var(&serverConfig.MaxBodySize, "max-body-size", 2<<20, "Max body size in bytes")
 	flag.BoolVar(&serverConfig.DebugPerf, "debug-perf", false, "Enable performance debugging")
 	flag.Parse()
 

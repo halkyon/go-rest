@@ -61,10 +61,10 @@ func (server *Server) Start() error {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range server.Routes() {
 		router.
-			Methods(route.Method).
-			Path(route.Pattern).
+			Methods(route.Methods).
+			Path(route.Path).
 			Name(route.Name).
-			Handler(route.HandlerFunc)
+			Handler(route.Handler)
 	}
 
 	if server.config.DebugPerf {
