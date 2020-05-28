@@ -46,6 +46,7 @@ There's a lot more to be added to make this a real application! Here's a few exa
 * Check for data, output HTTP status not found if missing
 * Add support for DELETE requests
 * Authentication
+* Versioned API, e.g. https://mysite.com/v1/resource/1
 * Use some kind of standard specification, e.g. [OpenAPI](https://swagger.io/specification/) or [JSON API](https://jsonapi.org/)
 * Validate POST data matches expectations, e.g. correct fields provided
 * Tests
