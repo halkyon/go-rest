@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"time"
 
@@ -16,13 +15,13 @@ const (
 )
 
 func main() {
-	if err := run(os.Stdout); err != nil {
+	if err := run(os.Stdout, os.Stderr); err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(exitFail)
 	}
 }
 
-func run(stdout io.Writer) error {
+func run(stdout, stderr io.Writer) error {
 	var serverConfig server.Config
 
 	flag.StringVar(&serverConfig.Listen, "listen", "0.0.0.0", "Address")
@@ -34,9 +33,7 @@ func run(stdout io.Writer) error {
 	flag.BoolVar(&serverConfig.DebugPerf, "debug-perf", false, "Enable performance debugging")
 	flag.Parse()
 
-	stdoutLog := log.New(stdout, "", log.Ldate|log.Ltime)
-
-	server, err := server.New(serverConfig, stdoutLog)
+	server, err := server.New(serverConfig, stdout, stderr)
 	if err != nil {
 		return err
 	}

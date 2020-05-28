@@ -12,7 +12,7 @@ type Resource struct {
 	Name string `json:"name"`
 }
 
-func (server *Server) index(writer http.ResponseWriter, req *http.Request) {
+func (server *Server) index(writer http.ResponseWriter, req *http.Request) error {
 	// todo: get data from data source
 	list := []Resource{
 		{Name: "Bob"},
@@ -22,14 +22,15 @@ func (server *Server) index(writer http.ResponseWriter, req *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(&list)
 	if err != nil {
-		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
+		return StatusError{http.StatusInternalServerError, errors.Wrap(err, "could not write response")}
 	}
+
+	return nil
 }
 
-func (server *Server) resourceIndex(writer http.ResponseWriter, req *http.Request) {
+func (server *Server) resourceIndex(writer http.ResponseWriter, req *http.Request) error {
 	if req.ContentLength > server.config.MaxBodySize {
-		http.Error(writer, "request body too large", http.StatusExpectationFailed)
-		return
+		return StatusError{http.StatusExpectationFailed, errors.New("request body too large")}
 	}
 
 	req.Body = http.MaxBytesReader(writer, req.Body, server.config.MaxBodySize)
@@ -37,8 +38,7 @@ func (server *Server) resourceIndex(writer http.ResponseWriter, req *http.Reques
 	var resource Resource
 	err := json.NewDecoder(req.Body).Decode(&resource)
 	if err != nil {
-		http.Error(writer, errors.Wrap(err, "failed to parse request body").Error(), http.StatusBadRequest)
-		return
+		return StatusError{http.StatusBadRequest, errors.Wrap(err, "failed to parse request body")}
 	}
 
 	// todo: validate data, and write resource data
@@ -46,11 +46,13 @@ func (server *Server) resourceIndex(writer http.ResponseWriter, req *http.Reques
 	writer.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(writer).Encode(&resource)
 	if err != nil {
-		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
+		return StatusError{http.StatusInternalServerError, errors.Wrap(err, "could not write response")}
 	}
+
+	return nil
 }
 
-func (server *Server) resourceShow(writer http.ResponseWriter, req *http.Request) {
+func (server *Server) resourceShow(writer http.ResponseWriter, req *http.Request) error {
 	vars := mux.Vars(req)
 	id := vars["id"]
 
@@ -60,6 +62,8 @@ func (server *Server) resourceShow(writer http.ResponseWriter, req *http.Request
 	writer.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(&resource)
 	if err != nil {
-		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
+		return StatusError{http.StatusInternalServerError, errors.Wrap(err, "could not write response")}
 	}
+
+	return nil
 }

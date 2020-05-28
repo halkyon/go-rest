@@ -3,7 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
-	"log"
+	"io"
 	"net/http"
 	"time"
 
@@ -16,8 +16,8 @@ import (
 )
 
 type Server struct {
-	config    Config
-	stdoutLog *log.Logger
+	config         Config
+	stdout, stderr io.Writer
 }
 
 type Config struct {
@@ -46,14 +46,15 @@ func (config Config) Validate() error {
 	return result.ErrorOrNil()
 }
 
-func New(config Config, stdoutLog *log.Logger) (*Server, error) {
+func New(config Config, stdout, stderr io.Writer) (*Server, error) {
 	if err := config.Validate(); err != nil {
 		return nil, err
 	}
 
 	return &Server{
-		config:    config,
-		stdoutLog: stdoutLog,
+		config: config,
+		stdout: stdout,
+		stderr: stderr,
 	}, nil
 }
 
@@ -64,21 +65,21 @@ func (server *Server) Start() error {
 			Methods(route.Methods).
 			Path(route.Path).
 			Name(route.Name).
-			Handler(route.Handler)
+			Handler(Handler{server.stderr, route.Handler})
 	}
 
 	if server.config.DebugPerf {
 		router.PathPrefix("/debug/pprof").Handler(http.DefaultServeMux)
 	}
 
-	server.stdoutLog.Printf("Starting server on %s:%s", server.config.Listen, server.config.Port)
+	fmt.Fprintf(server.stdout, "Starting server on %s:%s\n", server.config.Listen, server.config.Port)
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf("%s:%s", server.config.Listen, server.config.Port),
 		ReadTimeout:  server.config.ReadTimeout,
 		WriteTimeout: server.config.WriteTimeout,
 		IdleTimeout:  server.config.IdleTimeout,
-		Handler:      handlers.LoggingHandler(server.stdoutLog.Writer(), router),
+		Handler:      handlers.LoggingHandler(server.stdout, router),
 	}
 
 	return httpServer.ListenAndServe()

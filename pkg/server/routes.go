@@ -1,12 +1,10 @@
 package server
 
-import "net/http"
-
 type Route struct {
 	Name    string
 	Methods string
 	Path    string
-	Handler http.HandlerFunc
+	Handler HandlerFunc
 }
 
 func (server *Server) Routes() []Route {
