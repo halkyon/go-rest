@@ -14,10 +14,7 @@ type Resource struct {
 
 func (server *Server) index(writer http.ResponseWriter, req *http.Request) error {
 	// todo: get data from data source
-	list := []Resource{
-		{Name: "Bob"},
-		{Name: "Joe"},
-	}
+	list := []Resource{{"Bob"}, {"Joe"}}
 
 	writer.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(&list)
@@ -57,7 +54,7 @@ func (server *Server) resourceShow(writer http.ResponseWriter, req *http.Request
 	id := vars["id"]
 
 	// todo: get data, output 404 if not found
-	resource := Resource{Name: id}
+	resource := Resource{id}
 
 	writer.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(&resource)

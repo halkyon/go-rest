@@ -51,11 +51,7 @@ func New(config Config, stdout, stderr io.Writer) (*Server, error) {
 		return nil, err
 	}
 
-	return &Server{
-		config: config,
-		stdout: stdout,
-		stderr: stderr,
-	}, nil
+	return &Server{config, stdout, stderr}, nil
 }
 
 func (server *Server) Start() error {
