@@ -22,7 +22,7 @@ func (server *Server) index(writer http.ResponseWriter, req *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(writer).Encode(&list)
 	if err != nil {
-		http.Error(writer, "could not write response", http.StatusInternalServerError)
+		http.Error(writer, errors.Wrap(err, "could not write response").Error(), http.StatusInternalServerError)
 	}
 }
 
