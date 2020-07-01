@@ -14,4 +14,5 @@ COPY --from=builder /etc/passwd /etc/passwd
 COPY --from=builder /etc/group /etc/group
 COPY --from=builder --chown=app:app /tmp /tmp
 USER app
-CMD ["/app"]
+ENTRYPOINT ["app"]
+CMD ["-h"]
