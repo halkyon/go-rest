@@ -2,7 +2,7 @@ FROM golang:1.14 AS builder
 RUN apt-get update && apt-get -y install upx
 WORKDIR /build
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags="-w -s" -o ./app
+RUN CGO_ENABLED=0 go build -trimpath -ldflags='-w -s -extldflags "-static"' -o ./app
 RUN upx -qq -9 ./app
 RUN useradd app
 
